@@ -4,6 +4,7 @@ start:
 	move.b #255,d7
 	trap #14
 
+;;; Setuppia subrountine ;;;
 setuppia:
 	move.b #0,$10084	; choose DDRA
 	move.b #1,$10080	; set PIAA pin 0 to output

@@ -4,6 +4,7 @@ start:
 	move.b #255,d7
 	trap #14
 
+;;; Getkey subroutine ;;;
 getkey:
 	move.l d0,-(a7)		; throw on stack
 	move.l #0,d0		; reset d0

@@ -5,6 +5,7 @@ start:
 	move.b #255,d7
 	trap #14
 
+;;; Clearinput subroutine ;;;
 clearinput:
 	move.l #$FFFFFFFF,$4000	; reset $4000
 	rts

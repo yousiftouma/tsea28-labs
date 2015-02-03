@@ -16,9 +16,9 @@ checkcode:
 	move.l $4000,d5	; point to input code
 	move.l $4010,d6	; point to stored code
 	
-	cmp.l d5,d6		; compare pointers
+	cmp.l d5,d6	; compare pointers
 	bne falsecode	; false, jump
-	bra endcode		; jump to end
+	bra endcode	; jump to end
 falsecode:
 	move.l #0,d4	; set d4 (false)
 endcode:

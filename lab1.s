@@ -3,11 +3,21 @@ start:
 	move.l #$7000,a7	; set stack pointer
 	jsr setuppia		; setup PIAA, PIAB
 
+	; 'Felaktig kod!' ;
+	move.l #$46656C61,$5000
+	move.l #$6B746967,$5004
+	move.l #$206B6F64,$5008
+	move.b #$21,$500C
+	move.l #13,d5		; string len
+	move.l #$5000,a4	; string pos
+	
+
 restart:
 	jsr clearinput		; clear input buffer
 	jsr deactivatealarm
 
 waitactivate:
+	jsr getkey
 	cmp.b #$41,d4		; wait for A to be pressed
 	bne waitactivate
 
@@ -18,7 +28,7 @@ waitactivate:
 
 waitinput:
 	jsr getkey
-	move.b #9,d1		; init lopp var
+	move.b #10,d1		; init lopp var
 
 checkkey:			; Checks whether key is numeric
 	cmp.b d2,d4
@@ -38,6 +48,7 @@ waitforcode:
 	jsr checkcode		; check if code is correct
 	cmp.b #1,d4
 	beq restart		; jump and deactivate alarm
+	jsr printstring		; write 'Fel kod'
 	bra waitinput		; else wait for next key
 
 	move.b #255,d7
@@ -115,6 +126,20 @@ falsecode:
 endcode:
 	move.l (a7)+,d6		; restore from stack
 	move.l (a7)+,d5		; restore from stack
+	rts
+
+;;; Printstring subroutine ;;;
+printstring:
+	move.l d4,-(a7)		; throw on stack
+printloop:
+	move.b (a4)+,d4		; a4 value to d4 and increment
+	jsr printchar		; call printchar
+	sub.b #1,d5		; increment loop var
+	bne printloop		; loop call
+	
+	move.b #$0A,d4		; new line
+	jsr printchar
+	move.l (a7)+,d4		; restore from stack
 	rts
 
 ;;; Printchar subroutine ;;;

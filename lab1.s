@@ -97,12 +97,17 @@ relkey:
 
 ;;; Addkey subroutine ;;;
 addkey:
-	move.b $4001,$4000
-	move.b $4002,$4001
-	move.b $4003,$4002
+	move.l a0,-(a7)		; throw on stack
+	move.b d0,-(a7)		; throw on stack
+	move.l $4000,a0		; oldest key
+	move.b #2,d0		; init loop var
+addkeyloop:
+	move.b 1(a0),(a0)+	; shift a0 + 1 to a0
+	sub.b #1,d0
+	bne addkeyloop
 	move.b d1,$4003		; move in new value
 	rts
-
+	
 ;;; Checkcode subroutine ;;;
 checkcode:
 	move.l #1,d4		; set default val

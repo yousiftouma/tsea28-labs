@@ -106,6 +106,8 @@ addkeyloop:
 	sub.b #1,d0
 	bne addkeyloop
 	move.b d1,$4003		; move in new value
+	move.l (a7)+,d0		; restore from stack
+	move.l (a7)+,a0		; restore from stack
 	rts
 	
 ;;; Checkcode subroutine ;;;

@@ -87,14 +87,12 @@ getkey:
 	move.l d0,-(a7)		; throw on stack
 	move.l #0,d0		; reset d0
 waitkey:
-	move.b $10082,d0	; move PIAB tp d+
-	and.b #16,d0		; isolate strobe
-	beq waitkey		; jump if false
+	btst #4,$10082		; check strobe
+	beq waitkey		; jump if not strobe
 
 relkey:
-	move.b $10082,d0	; move PIAB to d0
-	and.b #16,d0		; isolate strobe
-	bne relkey		; jump if true
+	btst #4,$10082		; jump if not strobe
+	bne relkey		; jump if strobe
 	move.b $10082,d0	; move PIAB to d0
 	and.b #15,d0		; isolate key data
 	move.l d0,d4		; save result in d4

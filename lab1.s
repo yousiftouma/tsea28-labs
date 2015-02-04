@@ -84,8 +84,6 @@ clearinput:
 
 ;;; Getkey subroutine ;;;
 getkey:
-	move.l d0,-(a7)		; throw on stack
-	move.l #0,d0		; reset d0
 waitkey:
 	btst #4,$10082		; check strobe
 	beq waitkey		; jump if not strobe
@@ -93,11 +91,8 @@ waitkey:
 relkey:
 	btst #4,$10082		; jump if not strobe
 	bne relkey		; jump if strobe
-	move.b $10082,d0	; move PIAB to d0
-	and.b #15,d0		; isolate key data
-	move.l d0,d4		; save result in d4
-	
-	move.l (a7)+,d0		; restore from stack
+	move.b $10082,d4	; move PIAB to d4
+	and.b #15,d4		; isolate key data
 	rts
 
 ;;; Addkey subroutine ;;;

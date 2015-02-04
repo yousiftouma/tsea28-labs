@@ -131,6 +131,8 @@ endcode:
 ;;; Printstring subroutine ;;;
 printstring:
 	move.l d4,-(a7)		; throw on stack
+	move.l a4,-(a7)		; throw on stack
+	move.l d5,-(a7)		; throw on stack
 printloop:
 	move.b (a4)+,d4		; a4 value to d4 and increment
 	jsr printchar		; call printchar
@@ -139,6 +141,8 @@ printloop:
 	
 	move.b #$0A,d4		; new line
 	jsr printchar
+	move.l (a7)+,d5		; restore from stack
+	move.l (a7)+,a4		; restore from stack
 	move.l (a7)+,d4		; restore from stack
 	rts
 

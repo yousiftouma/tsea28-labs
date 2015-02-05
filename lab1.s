@@ -4,12 +4,12 @@ start:
 	jsr setuppia		; setup PIAA, PIAB
 
 	; 'Felaktig kod!' ;
-	move.l #$46656C61,$5000
-	move.l #$6B746967,$5004
-	move.l #$206B6F64,$5008
-	move.b #$21,$500C
+	move.l #$46656C61,$4020
+	move.l #$6B746967,$4024
+	move.l #$206B6F64,$4028
+	move.b #$21,$402C
 	move.l #13,d5		; string len
-	move.l #$5000,a4	; string pos
+	move.l #$4020,a4	; string pos
 	
 
 restart:
@@ -18,13 +18,13 @@ restart:
 
 waitactivate:
 	jsr getkey
-	cmp.b #$41,d4		; wait for A to be pressed
+	cmp.b #$A,d4		; wait for A to be pressed
 	bne waitactivate
 
 	jsr activatealarm
 
 	move.l #0,d1		; reset d1
-	move.l #$30,d2		; set d2 to first ASCII numeric
+	move.l #$0,d2		; set d2 to first ASCII numeric
 
 waitinput:
 	jsr getkey
@@ -43,7 +43,7 @@ addkeyif:
 	bra waitinput		; next key
 
 waitforcode:
-	cmp.b #$46,d4		; wait fpr F tp ne pressed
+	cmp.b #$F,d4		; wait fpr F tp ne pressed
 	bne waitinput		; incorrect input
 	jsr checkcode		; check if code is correct
 	cmp.b #1,d4

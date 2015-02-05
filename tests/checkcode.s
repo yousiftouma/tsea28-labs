@@ -9,19 +9,19 @@ start:
 	trap #14
 
 ;;; Checkcode subroutine ;;;
-checkcode:
-	move.l #1,d4	; set default val
-	move.l d5,-(a7)	; throw on stack
-	move.l d6,-(a7)	; throw on stack
-	move.l $4000,d5	; point to input code
-	move.l $4010,d6	; point to stored code
+checkCode:
+	move.l #1,d4		; set default value
+	move.l d5,-(a7)		; throw on stack
+	move.l d6,-(a7)		; throw on stack
+	move.l $4000,d5		; point to input code
+	move.l $4010,d6		; point to stored code
 	
-	cmp.l d5,d6	; compare pointers
-	bne falsecode	; false, jump
-	bra endcode	; jump to end
-falsecode:
-	move.l #0,d4	; set d4 (false)
-endcode:
-	move.l (a7)+,d6	; restore from stack
-	move.l (a7)+,d5	; restore from stack
+	cmp.l d5,d6			; compare pointers
+	bne false_code		; false, jump
+	bra end_code			; jump to end
+false_code:
+	move.l #0,d4		; set d4 (false)
+end_code:
+	move.l (a7)+,d6		; restore from stack
+	move.l (a7)+,d5		; restore from stack
 	rts

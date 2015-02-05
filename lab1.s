@@ -1,5 +1,5 @@
 
-start:
+setup:
 	move.l #$7000,a7	; set stack pointer
 	jsr setuppia		; setup PIAA, PIAB
 
@@ -11,44 +11,43 @@ start:
 	move.l #13,d5		; string len
 	move.l #$4020,a4	; string pos
 
-restart:
+start_program:
 	jsr clearinput		; clear input buffer
 	jsr deactivatealarm
 
-waitactivate:
+wait_activation:
 	jsr getkey
 	cmp.b #$A,d4		; wait for A to be pressed
-	bne waitactivate
-
-	jsr activatealarm
+	bne wait_activation
+	jsr activate_alarm
 
 	move.l #0,d1		; reset d1
 	move.l #$0,d2		; set d2 to first numeric
 
-waitinput:
+wait_input:
 	jsr getkey
 	move.b #10,d1		; init lopp var
 
-checkkey:				; Checks whether key is numeric
+check_numeric_loop:
 	cmp.b d2,d4
-	beq addkeyif		; if numeric
+	beq add_numeric_key
 	add.b #1,d2			; next numeric
-	sub.b #1,d1			; inrement loop var
-	bne checkkey
-	bra waitforcode		; if false check if 'F'
+	sub.b #1,d1			; decrement loop var
+	bne check_numeric_loop
+	bra wait_confirm	; if false check if 'F'
 
-addkeyif:
-	jsr addkey			; add keypressed
-	bra waitinput		; next key
+add_numeric_key:
+	jsr addkey			; add key to buffer
+	bra wait_input		; next key
 
-waitforcode:
+wait_confirm:
 	cmp.b #$F,d4		; wait fpr F tp ne pressed
-	bne waitinput		; incorrect input
+	bne wait_input		; incorrect input
 	jsr checkcode		; check if code is correct
 	cmp.b #1,d4
-	beq restart			; jump and deactivate alarm
+	beq start_program	; restart program
 	jsr printstring		; write error code
-	bra waitinput		; else wait for next key
+	bra wait_input		; else wait for next key
 
 	move.b #255,d7
 	trap #14
@@ -83,13 +82,13 @@ clearinput:
 
 ;;; Getkey subroutine ;;;
 getkey:
-waitkey:
+wait_press:
 	btst #4,$10082		; check strobe
-	beq waitkey			; jump if not strobe
+	beq wait_press		; jump if not strobe
 
-relkey:
+wait_release:
 	btst #4,$10082		; jump if not strobe
-	bne relkey			; jump if strobe
+	bne wait_release	; jump if strobe
 	move.b $10082,d4	; move PIAB to d4
 	and.b #15,d4		; isolate key data
 	rts
@@ -100,10 +99,10 @@ addkey:
 	move.b d0,-(a7)		; throw on stack
 	move.l $4000,a0		; oldest key
 	move.b #2,d0		; init loop var
-addkeyloop:
+add_key_loop:
 	move.b 1(a0),(a0)+	; shift a0 + 1 to a0
 	sub.b #1,d0
-	bne addkeyloop
+	bne add_key_loop
 
 	move.b d1,$4003		; move in new value
 	move.l (a7)+,d0		; restore from stack
@@ -119,11 +118,11 @@ checkcode:
 	move.l $4010,d6		; point to stored code
 	
 	cmp.l d5,d6			; compare pointers
-	bne falsecode		; false, jump
-	bra endcode			; jump to end
-falsecode:
+	bne false_code		; false, jump
+	bra end_code			; jump to end
+false_code:
 	move.l #0,d4		; set d4 (false)
-endcode:
+end_code:
 	move.l (a7)+,d6		; restore from stack
 	move.l (a7)+,d5		; restore from stack
 	rts
@@ -133,11 +132,11 @@ printstring:
 	move.l d4,-(a7)		; throw on stack
 	move.l a4,-(a7)		; throw on stack
 	move.l d5,-(a7)		; throw on stack
-printloop:
+print_loop:
 	move.b (a4)+,d4		; a4 value to d4 and increment
 	jsr printchar		; call printchar
 	sub.b #1,d5			; increment loop var
-	bne printloop		; loop call
+	bne print_loop		; loop call
 	
 	move.b #$0A,d4		; new line
 	jsr printchar
@@ -149,10 +148,10 @@ printloop:
 ;;; Printchar subroutine ;;;
 printchar:
 	move.b d5,-(a7)     ; save d5 on stack
-waittx:
+wait_tx:
 	move.b $10040,d5    ; status register for serialport
 	and.b #2,d5			; isolate bit 1, ready for transmit
-	beq waittx			; wait until serialport is ready to transmit
+	beq wait_tx			; wait until serialport is ready to transmit
 	move.b d4,$10042 	; transmit d4
 	move.b (a7)+,d5	 	; reset d5
 	rts

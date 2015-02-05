@@ -21,13 +21,11 @@ wait_activation:
 	bne wait_activation
 	jsr activateAlarm
 
-	move.l #0,d1		; reset d1
-	move.l #$0,d2		; set d2 to first numeric
-
 wait_input:
 	jsr getKey
 	move.b #10,d1		; init lopp var
-
+	move.l #$0,d2		; set d2 to first numeric
+	
 check_numeric_loop:
 	cmp.b d2,d4
 	beq add_numeric_key

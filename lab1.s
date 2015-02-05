@@ -1,7 +1,7 @@
 
 setup:
 	move.l #$7000,a7	; set stack pointer
-	jsr setuppia		; setup PIAA, PIAB
+	jsr setupPia		; setup PIAA, PIAB
 
 	; 'Felaktig kod!' ;
 	move.l #$46656C61,$4020
@@ -12,20 +12,20 @@ setup:
 	move.l #$4020,a4	; string pos
 
 start_program:
-	jsr clearinput		; clear input buffer
-	jsr deactivatealarm
+	jsr clearInput		; clear input buffer
+	jsr deactivateAlarm
 
 wait_activation:
-	jsr getkey
+	jsr getKey
 	cmp.b #$A,d4		; wait for A to be pressed
 	bne wait_activation
-	jsr activate_alarm
+	jsr activateAlarm
 
 	move.l #0,d1		; reset d1
 	move.l #$0,d2		; set d2 to first numeric
 
 wait_input:
-	jsr getkey
+	jsr getKey
 	move.b #10,d1		; init lopp var
 
 check_numeric_loop:
@@ -37,16 +37,16 @@ check_numeric_loop:
 	bra wait_confirm	; if false check if 'F'
 
 add_numeric_key:
-	jsr addkey			; add key to buffer
+	jsr addKey			; add key to buffer
 	bra wait_input		; next key
 
 wait_confirm:
 	cmp.b #$F,d4		; wait fpr F tp ne pressed
 	bne wait_input		; incorrect input
-	jsr checkcode		; check if code is correct
+	jsr checkCode		; check if code is correct
 	cmp.b #1,d4
 	beq start_program	; restart program
-	jsr printstring		; write error code
+	jsr printString		; write error code
 	bra wait_input		; else wait for next key
 
 	move.b #255,d7
@@ -56,7 +56,7 @@ wait_confirm:
 ;;; ;;; Subroutines ;;; ;;;
 
 ;;; Setuppia subrountine ;;;
-setuppia:
+setupPia:
 	move.b #0,$10084	; choose DDRA
 	move.b #1,$10080	; set PIA port A pin 0 to output
 	move.b #4,$10084	; choose I/O registry
@@ -66,22 +66,22 @@ setuppia:
 	rts
 
 ;;; Activatealarm subroutine ;;;
-activatealarm:
+activateAlarm:
 	move.b #1,$10080	; set PIAA pin 0 to 1
 	rts
 
 ;;; Deactivatealarm subroutine ;;;
-deactivatealarm:
+deactivateAlarm:
 	move.b #0,$10080	; set PIAA pin 0 to 0
 	rts
 
 ;;; Clearinput subroutine ;;;
-clearinput:
+clearInput:
 	move.l #$FFFFFFFF,$4000	; reset $4000
 	rts
 
 ;;; Getkey subroutine ;;;
-getkey:
+getKey:
 wait_press:
 	btst #4,$10082		; check strobe
 	beq wait_press		; jump if not strobe
@@ -94,7 +94,7 @@ wait_release:
 	rts
 
 ;;; Addkey subroutine ;;;
-addkey:
+addKey:
 	move.l a0,-(a7)		; throw on stack
 	move.b d0,-(a7)		; throw on stack
 	move.l $4000,a0		; oldest key
@@ -110,7 +110,7 @@ add_key_loop:
 	rts
 	
 ;;; Checkcode subroutine ;;;
-checkcode:
+checkCode:
 	move.l #1,d4		; set default value
 	move.l d5,-(a7)		; throw on stack
 	move.l d6,-(a7)		; throw on stack
@@ -128,25 +128,25 @@ end_code:
 	rts
 
 ;;; Printstring subroutine ;;;
-printstring:
+printString:
 	move.l d4,-(a7)		; throw on stack
 	move.l a4,-(a7)		; throw on stack
 	move.l d5,-(a7)		; throw on stack
 print_loop:
 	move.b (a4)+,d4		; a4 value to d4 and increment
-	jsr printchar		; call printchar
+	jsr printChar		; call printchar
 	sub.b #1,d5			; increment loop var
 	bne print_loop		; loop call
 	
 	move.b #$0A,d4		; new line
-	jsr printchar
+	jsr printChar
 	move.l (a7)+,d5		; restore from stack
 	move.l (a7)+,a4		; restore from stack
 	move.l (a7)+,d4		; restore from stack
 	rts
 
 ;;; Printchar subroutine ;;;
-printchar:
+printChar:
 	move.b d5,-(a7)     ; save d5 on stack
 wait_tx:
 	move.b $10040,d5    ; status register for serialport

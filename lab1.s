@@ -7,8 +7,9 @@ setup:
 	move.l #$46656C61,$4020
 	move.l #$6B746967,$4024
 	move.l #$206B6F64,$4028
-	move.b #$21,$402C
-	move.l #13,d5		; string len
+	move.l #$21200A0D,$402C
+
+	move.l #16,d5		; string len
 	move.l #$4020,a4	; string pos
 
 start_program:
@@ -25,7 +26,7 @@ wait_input:
 	jsr getKey
 	move.b #10,d1		; init lopp var
 	move.l #$0,d2		; set d2 to first numeric
-	
+
 check_numeric_loop:
 	cmp.b d2,d4
 	beq add_numeric_key
@@ -136,8 +137,6 @@ print_loop:
 	sub.b #1,d5			; increment loop var
 	bne print_loop		; loop call
 	
-	move.b #$0A,d4		; new line
-	jsr printChar
 	move.l (a7)+,d5		; restore from stack
 	move.l (a7)+,a4		; restore from stack
 	move.l (a7)+,d4		; restore from stack

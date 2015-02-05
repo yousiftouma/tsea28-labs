@@ -2,15 +2,7 @@
 setup:
 	move.l #$7000,a7	; set stack pointer
 	jsr setupPia		; setup PIAA, PIAB
-
-	; 'Felaktig kod!' ;
-	move.l #$46656C61,$4020
-	move.l #$6B746967,$4024
-	move.l #$206B6F64,$4028
-	move.l #$21200A0D,$402C
-
-	move.l #16,d5		; string len
-	move.l #$4020,a4	; string pos
+	jsr setupErrorString
 
 start_program:
 	jsr clearInput		; clear input buffer
@@ -136,7 +128,7 @@ print_loop:
 	jsr printChar		; call printchar
 	sub.b #1,d5			; increment loop var
 	bne print_loop		; loop call
-	
+
 	move.l (a7)+,d5		; restore from stack
 	move.l (a7)+,a4		; restore from stack
 	move.l (a7)+,d4		; restore from stack
@@ -152,3 +144,16 @@ wait_tx:
 	move.b d4,$10042 	; transmit d4
 	move.b (a7)+,d5	 	; reset d5
 	rts
+
+;;; Setup error string subroutine ;;;
+setupErrorString:
+	; 'Felaktig kod!' ;
+	move.l #$46656C61,$4020
+	move.l #$6B746967,$4024
+	move.l #$206B6F64,$4028
+	move.l #$21200A0D,$402C
+
+	move.l #16,d5		; string len
+	move.l #$4020,a4	; string pos
+	rts
+

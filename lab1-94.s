@@ -4,30 +4,29 @@ start:
 	jsr setuppia		; setup PIAA, PIAB
 
 	; 'Felaktig kod!' ;
-	move.l #$46656C61,$5000
-	move.l #$6B746967,$5004
-	move.l #$206B6F64,$5008
-	move.b #$21,$500C
-	move.b #$20,$500D	; extra space
+	move.l #$46656C61,$4020
+	move.l #$6B746967,$4024
+	move.l #$206B6F64,$4028
+	move.b #$21,$402C
+	move.b #$20,$402D	; extra space
 	move.l #16,d5		; string len
-	move.l #$5000,a4	; string pos
-	
+	move.l #$4020,a4	; string pos
 
 restart:
 	jsr clearinput		; clear input buffer
-	move.l #$30,d5		; wrong code counter ten
-	move.l #$30,d6		; wrong code counter unit
+	move.l #0,d6		; wrong code counter ten
+	move.l #0,d7		; wrong code counter unit
 	jsr deactivatealarm
 
 waitactivate:
 	jsr getkey
-	cmp.b #$41,d4		; wait for A to be pressed
+	cmp.b #$A,d4		; wait for A to be pressed
 	bne waitactivate
 
 	jsr activatealarm
 
 	move.l #0,d1		; reset d1
-	move.l #$30,d2		; set d2 to first ASCII numeric
+	move.l #0,d2		; set d2 to first numeric
 
 waitinput:
 	jsr getkey
@@ -36,8 +35,8 @@ waitinput:
 checkkey:			; Checks whether key is numeric
 	cmp.b d2,d4
 	beq addkeyif		; if numeric
-	add.b #1,d2		; next ASCII numeric
-	sub.b #1,d1		; inrement loop var
+	add.b #1,d2		; next numeric
+	sub.b #1,d1		; decrement loop var
 	bne checkkey
 	bra waitforcode		; if false check if F
 
@@ -46,7 +45,7 @@ addkeyif:
 	bra waitinput		; next key
 
 waitforcode:
-	cmp.b #$46,d4		; wait fpr F tp ne pressed
+	cmp.b #$F,d4		; wait for F to ne pressed
 	bne waitinput		; incorrect input
 	jsr checkcode		; check if code is correct
 	cmp.b #1,d4
@@ -88,32 +87,32 @@ clearinput:
 
 ;;; Getkey subroutine ;;;
 getkey:
-	move.l d0,-(a7)		; throw on stack
-	move.l #0,d0		; reset d0
 waitkey:
-	move.b $10082,d0	; move PIAB tp d+
-	and.b #16,d0		; isolate strobe
-	beq waitkey		; jump if false
+	btst #4,$10082		; check strobe
+	beq waitkey		; jump if not strobe
 
 relkey:
-	move.b $10082,d0	; move PIAB to d0
-	and.b #16,d0		; isolate strobe
-	bne relkey		; jump if true
-	move.b $10082,d0	; move PIAB to d0
-	and.b #15,d0		; isolate key data
-	move.l d0,d4		; save result in d4
-	
-	move.l (a7)+,d0		; restore from stack
+	btst #4,$10082		; jump if not strobe
+	bne relkey		; jump if strobe
+	move.b $10082,d4	; move PIAB to d4
+	and.b #15,d4		; isolate key data
 	rts
 
 ;;; Addkey subroutine ;;;
 addkey:
-	move.b $4001,$4000
-	move.b $4002,$4001
-	move.b $4003,$4002
+	move.l a0,-(a7)		; throw on stack
+	move.b d0,-(a7)		; throw on stack
+	move.l $4000,a0		; oldest key
+	move.b #2,d0		; init loop var
+addkeyloop:
+	move.b 1(a0),(a0)+	; shift a0 + 1 to a0
+	sub.b #1,d0
+	bne addkeyloop
 	move.b d1,$4003		; move in new value
+	move.l (a7)+,d0		; restore from stack
+	move.l (a7)+,a0		; restore from stack
 	rts
-
+	
 ;;; Checkcode subroutine ;;;
 checkcode:
 	move.l #1,d4		; set default val
@@ -135,6 +134,8 @@ endcode:
 ;;; Printstring subroutine ;;;
 printstring:
 	move.l d4,-(a7)		; throw on stack
+	move.l a4,-(a7)		; throw on stack
+	move.l d5,-(a7)		; throw on stack
 printloop:
 	move.b (a4)+,d4		; a4 value to d4 and increment
 	jsr printchar		; call printchar
@@ -143,6 +144,8 @@ printloop:
 	
 	move.b #$0A,d4		; new line
 	jsr printchar
+	move.l (a7)+,d5		; restore from stack
+	move.l (a7)+,a4		; restore from stack
 	move.l (a7)+,d4		; restore from stack
 	rts
 
@@ -160,16 +163,16 @@ waittx:
 
 ;;; Increment counter ;;;
 incrementcounter:
-	cmp.b #$39,d6		; if ASCII 9
+	cmp.b #9,d6		; if numeric 9
 	beq incrten
-	add.b #$1,d6		; increment unit
+	add.b #1,d6		; increment unit
 	bra incrend
 incrten:
-	move.b #$30,d6		; reset unit
-	add.b #$1,d5		; increment ten
+	move.b #0,d6		; reset unit
+	add.b #1,d5		; increment ten
 incrend:
-	move.b d5,$500E
-	move.b d6,$500F
+	move.b d5,$402E
+	move.b d6,$402F
 	rts
 	
 	

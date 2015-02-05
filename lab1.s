@@ -1,6 +1,9 @@
 
 setup:
 	move.l #$7000,a7	; set stack pointer
+	; Correct code ;
+	move.l #$03050801,$4000
+
 	jsr setupPia		; setup PIAA, PIAB
 	jsr setupErrorString
 
@@ -16,7 +19,6 @@ wait_activation:
 
 wait_input:
 	jsr getKey
-	move.b #10,d1		; init lopp var
 	move.l #$0,d2		; set d2 to first numeric
 
 check_numeric:

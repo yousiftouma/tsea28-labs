@@ -19,20 +19,15 @@ wait_input:
 	move.b #10,d1		; init lopp var
 	move.l #$0,d2		; set d2 to first numeric
 
-check_numeric_loop:
-	cmp.b d2,d4
-	beq add_numeric_key
-	add.b #1,d2			; next numeric
-	sub.b #1,d1			; decrement loop var
-	bne check_numeric_loop
-	bra wait_confirm	; if false check if 'F'
-
-add_numeric_key:
-	jsr addKey			; add key to buffer
-	bra wait_input		; next key
+check_numeric:
+	move.b d4,d2		; so not to modify d4
+	sub.b #10,d2
+	bmi wait_confirm	; jump if negative
+	jsr addKey 			; add key to buffer
+	bra wait_input		; wait for next key
 
 wait_confirm:
-	cmp.b #$F,d4		; wait fpr F tp ne pressed
+	cmp.b #$F,d4		; wait for F to be pressed
 	bne wait_input		; incorrect input
 	jsr checkCode		; check if code is correct
 	cmp.b #1,d4

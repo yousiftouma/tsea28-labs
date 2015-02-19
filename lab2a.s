@@ -7,7 +7,9 @@ setup:
 	move.l #1000,d0		; 1000ms delay on print
 	
 mainLoop:
+	or.w #$0700,SR		; set interupt level 7
 	jsr $2020		; write BAKGRUNDSPROGRAM
+	and.w #$F8FF,SR		; reset interupt level
 	jsr $2000		; delay
 	bra mainLoop
 

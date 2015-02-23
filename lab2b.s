@@ -14,7 +14,6 @@ setup:
 	move.l #$FF,d5		; set right direction
 	move.l #$FF,d6		; no serve
 	
-	move.l #7,d7		; start position
 gameLoop:
 	jsr showgame
 	move.l #1000,d0		; set loop timer
@@ -25,16 +24,14 @@ gameLoop:
 	cmp.b #$FF,d5
 	beq goingright
 goingleft:
-	cmp.b #7,d7
+	cmp.b #$80,d2
 	beq addedScoreRight
 	lsl.b #1,d2
-	add.b #1,d7
 	bra gameLoop
 goingright:
-	cmp.b #0,d7
+	cmp.b #1,d2
 	beq addedScoreLeft
 	lsr.b #1,d2
-	sub.b #1,d7
 	bra gameLoop
 
 addedScoreLeft:
@@ -95,7 +92,7 @@ waittx:
 ;;; LEFT PLAYER ACTIONS ;;;
 leftPlayerStrike:
 
-	cmp.b #7,d7		; is in left most position
+	cmp.b #$80,d2		; is in left most position
 	beq leftPlayerCorrectStrike
 	jsr rightPlayerScore
 	bra endLeftPlayerStrike
@@ -112,14 +109,13 @@ leftPlayerScore:
 	add.l #1,d4		; increment score
 	move.l #$FF,d6		; set serve, TRUE
 	move.l #$FF,d5		; set direction, right
-	move.l #7,d7		; set position, left most
 	move.l #$80,d2		; set light
 	rts
 
 ;;; RIGHT PLAYER ACTIONS ;;;
 rightPlayerStrike:
 
-	cmp.b #0,d7		; is in right most position
+	cmp.b #1,d2		; is in right most position
 	beq rightPlayerCorrectStrike
 	jsr leftPlayerScore
 	bra endRightPlayerStrike
@@ -136,6 +132,5 @@ rightPlayerScore:
 	add.l #1,d3		; increment score
 	move.l #$FF,d6		; set serve, TRUE
 	move.l #$00,d5		; set direction, left
-	move.l #0,d7		; set position, right most
 	move.l #1,d2		; set light
 	rts

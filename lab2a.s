@@ -13,10 +13,14 @@ mainLoop:
 	jsr $2000		; delay
 	bra mainLoop
 
+	ds 300
+	
 SKAVV:
 	btst #7,$10082		; reset CB1
 	jsr $2048		; write AVBROTT VÄNSTER
 	rte
+
+	ds 100
 
 SKAVH:
 	btst #7,$10080		; reset CA1
